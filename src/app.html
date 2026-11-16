@@ -71,6 +71,7 @@ h2 { font-family: var(--font-sign); font-weight: 700; font-size: 20px; margin: 2
 .spot-info { min-width: 0; display: grid; gap: 2px; }
 .spot-info .name { font-weight: 600; }
 .spot-info .free { color: var(--ok); font-weight: 600; }
+.spot-label { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; line-height: 1.2; }
 
 /* Svensk registreringsskylt */
 .plate { display: inline-flex; align-items: stretch; height: 28px; border: 2px solid var(--plate-fg); border-radius: 4px; background: var(--plate-bg); color: var(--plate-fg); overflow: hidden; font-family: var(--font-sign); font-weight: 700; font-size: 19px; letter-spacing: .06em; line-height: 1; width: max-content; }
@@ -389,7 +390,7 @@ function dayCard(day, label, isTomorrow) {
     <div class="day-head"><div><h3>${label}</h3><div class="date">${fmtDate(day)}</div></div>${status}</div>
     <div class="spots">${rows.map(r => `<div class="spot${r.booking ? " taken" : ""}${r.booking?.member_id === me ? " mine" : ""}">
       <div class="spot-no" aria-label="Plats ${r.permit.id}">${r.permit.id}</div>
-      <div class="spot-info">${r.booking ? `<span class="name">${esc(r.who)}${r.booking.member_id === me ? " (du)" : ""}</span>${plateHtml(r.plate)}` : `<span class="free">Ledig</span>`}</div>
+      <div class="spot-info"><span class="spot-label">Plats ${r.permit.id}</span>${r.booking ? `<span class="name">${esc(r.who)}${r.booking.member_id === me ? " (du)" : ""}</span>${plateHtml(r.plate)}` : `<span class="free">Ledig</span>`}</div>
       <div></div></div>`).join("")}</div>
     ${action}</section>`;
 }
