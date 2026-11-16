@@ -264,7 +264,9 @@ class DemoStore {
   }
 }
 
-const store = CONFIG.supabaseUrl && CONFIG.supabaseAnonKey ? new RemoteStore(CONFIG.supabaseUrl, CONFIG.supabaseAnonKey) : new DemoStore();
+// Demoläge: förhandsvisning hos Claude, eller adress som slutar på #demo
+const forceDemo = /claude/.test(location.hostname) || location.hash === "#demo";
+const store = !forceDemo && CONFIG.supabaseUrl && CONFIG.supabaseAnonKey ? new RemoteStore(CONFIG.supabaseUrl, CONFIG.supabaseAnonKey) : new DemoStore();
 
 /* ---------- Tillstånd i UI ---------- */
 let S = null;                         // senaste data
