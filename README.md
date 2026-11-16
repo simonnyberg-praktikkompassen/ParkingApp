@@ -26,7 +26,7 @@ som behöver bytas i garagets parkeringssystem.
 
 ## Driftsättning (ca 15 min)
 1. **Supabase:** `supabase link --project-ref sntuuntgoyagccpvtpvf` och `supabase db push`.
-   Sätt sedan gruppkoden i SQL Editor:
+   Sätt sedan gruppkoden i SQL Editor (skriv den med gemener, appen gör om det användaren skriver till gemener):
    `insert into app_config(key,value) values ('group_code_hash', extensions.crypt('ER-KOD', extensions.gen_salt('bf'))) on conflict (key) do update set value = excluded.value;`
 2. Project URL och publishable key står redan i `CONFIG` i `src/app.html`.
 3. **Vercel:** importera GitHub-repot på vercel.com/new. Varje push till `main` publiceras automatiskt.
