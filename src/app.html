@@ -1,0 +1,478 @@
+<title>Parkering Sundstorget</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700&display=swap">
+<style>
+/* Layout: en kolumn som ett skyltat garage – dagkort med platser, flikar fast i botten på mobilen */
+:root {
+  --bg: #eef1f4;          /* betonggrå med kall ton */
+  --surface: #ffffff;
+  --line: #d5dbe2;
+  --fg: #16202b;
+  --muted: #5b6876;
+  --sign: #1d4fb8;        /* P-skyltens blå */
+  --sign-fg: #ffffff;
+  --plate-bg: #ffffff;
+  --plate-fg: #101418;
+  --plate-eu: #1a3f9e;
+  --ok: #1d7a46;  --ok-bg: #e2f3e9;
+  --warn: #8a5300; --warn-bg: #fdf0d9;
+  --bad: #a3262a;  --bad-bg: #fbe5e5;
+  --font-body: "Barlow", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-sign: "Barlow Condensed", "Arial Narrow", system-ui, sans-serif;
+  --r: 10px;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #11161c; --surface: #19212a; --line: #2b3542; --fg: #e8edf2; --muted: #9aa7b5;
+  --sign: #4f7fe6; --sign-fg: #ffffff; --plate-bg: #f4f6f8; --plate-fg: #101418; --plate-eu: #1a3f9e;
+  --ok: #6fd39a; --ok-bg: #173323; --warn: #f2b45a; --warn-bg: #3a2a12; --bad: #f08a8d; --bad-bg: #3d1a1c;
+  color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #11161c; --surface: #19212a; --line: #2b3542; --fg: #e8edf2; --muted: #9aa7b5;
+  --sign: #4f7fe6; --sign-fg: #ffffff; --plate-bg: #f4f6f8; --plate-fg: #101418; --plate-eu: #1a3f9e;
+  --ok: #6fd39a; --ok-bg: #173323; --warn: #f2b45a; --warn-bg: #3a2a12; --bad: #f08a8d; --bad-bg: #3d1a1c;
+  color-scheme: dark }
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.45; }
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 3px solid var(--sign); outline-offset: 2px; }
+
+.wrap { max-width: 560px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 0 96px; }
+
+/* Header */
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); display: flex; align-items: center; gap: 12px; padding-block: 14px 12px; border-bottom: 1px solid var(--line); }
+.p-sign { flex: none; width: 44px; height: 44px; border-radius: 8px; background: var(--sign); color: var(--sign-fg); display: grid; place-items: center; font-family: var(--font-sign); font-weight: 700; font-size: 32px; line-height: 1; box-shadow: inset 0 0 0 3px var(--sign), inset 0 0 0 5px var(--sign-fg); }
+.top h1 { margin: 0; font-family: var(--font-sign); font-weight: 700; font-size: 22px; letter-spacing: .01em; line-height: 1.1; }
+.top .sub { font-size: 13px; color: var(--muted); }
+.top .grow { flex: 1; min-width: 0; }
+.who { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 6px 12px; font-size: 14px; font-weight: 600; white-space: nowrap; }
+
+.banner { margin-top: 12px; padding: 10px 12px; border-radius: var(--r); background: var(--warn-bg); color: var(--warn); font-size: 14px; display: flex; gap: 10px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+.banner button { background: none; border: 1px solid currentColor; border-radius: 6px; padding: 2px 10px; color: inherit; font-size: 13px; }
+
+h2 { font-family: var(--font-sign); font-weight: 700; font-size: 20px; margin: 22px 0 10px; letter-spacing: .01em; }
+.eyebrow { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.hint { color: var(--muted); font-size: 14px; margin: 6px 0 0; }
+
+/* Dagkort */
+.day { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; margin-top: 14px; display: grid; gap: 12px; }
+.day-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.day-head h3 { margin: 0; font-family: var(--font-sign); font-size: 24px; font-weight: 700; }
+.day-head .date { color: var(--muted); font-size: 14px; }
+.spots { display: grid; gap: 8px; }
+.spot { display: grid; grid-template-columns: 40px 1fr auto; align-items: center; gap: 12px; padding: 10px 12px; border-radius: var(--r); border: 1px dashed var(--line); min-height: 58px; }
+.spot.taken { border-style: solid; }
+.spot.mine { border-color: var(--sign); border-width: 2px; }
+.spot-no { width: 40px; height: 40px; border-radius: 6px; border: 2px solid var(--fg); display: grid; place-items: center; font-family: var(--font-sign); font-weight: 700; font-size: 20px; }
+.spot-info { min-width: 0; display: grid; gap: 2px; }
+.spot-info .name { font-weight: 600; }
+.spot-info .free { color: var(--ok); font-weight: 600; }
+
+/* Svensk registreringsskylt */
+.plate { display: inline-flex; align-items: stretch; height: 28px; border: 2px solid var(--plate-fg); border-radius: 4px; background: var(--plate-bg); color: var(--plate-fg); overflow: hidden; font-family: var(--font-sign); font-weight: 700; font-size: 19px; letter-spacing: .06em; line-height: 1; width: max-content; }
+.plate::before { content: "S"; background: var(--plate-eu); color: #fff; font-size: 10px; letter-spacing: 0; width: 13px; display: grid; place-items: end center; padding-bottom: 3px; }
+.plate span { padding: 0 8px 0 7px; display: grid; place-items: center; }
+.plate.lg { height: 36px; font-size: 24px; }
+.plate.lg::before { width: 16px; font-size: 12px; }
+
+.chip { display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; padding: 3px 10px; font-size: 13px; font-weight: 600; width: max-content; }
+.chip.ok { background: var(--ok-bg); color: var(--ok); }
+.chip.warn { background: var(--warn-bg); color: var(--warn); }
+.chip.bad { background: var(--bad-bg); color: var(--bad); }
+
+.btn { border: 0; border-radius: var(--r); padding: 12px 16px; font-weight: 700; background: var(--sign); color: var(--sign-fg); min-height: 46px; }
+.btn.ghost { background: transparent; color: var(--fg); border: 1px solid var(--line); font-weight: 600; }
+.btn.small { min-height: 36px; padding: 6px 12px; font-size: 14px; }
+.btn.danger { background: transparent; color: var(--bad); border: 1px solid currentColor; font-weight: 600; }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.full { width: 100%; }
+
+.pick { display: flex; gap: 8px; flex-wrap: wrap; }
+.pick label { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--line); border-radius: var(--r); padding: 6px 10px; cursor: pointer; }
+.pick input { accent-color: var(--sign); }
+
+/* Formulär */
+.field { display: grid; gap: 6px; }
+.field label { font-weight: 600; font-size: 14px; }
+.input { width: 100%; border: 1px solid var(--line); background: var(--surface); border-radius: var(--r); padding: 12px; min-height: 46px; }
+.input.platein { font-family: var(--font-sign); font-weight: 700; font-size: 22px; letter-spacing: .08em; text-transform: uppercase; }
+
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; display: grid; gap: 12px; margin-top: 14px; }
+.list { display: grid; gap: 8px; }
+.list-item { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line); }
+.list-item:first-child { border-top: 0; }
+
+.names { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; }
+.names button { border: 1px solid var(--line); background: var(--surface); border-radius: var(--r); padding: 14px 12px; font-weight: 600; text-align: left; min-height: 52px; }
+.names button small { display: block; font-weight: 500; color: var(--muted); font-size: 12px; }
+
+/* Ändringar */
+.change { display: grid; gap: 8px; padding: 12px; border-radius: var(--r); border: 1px solid var(--line); }
+.change.todo { border-color: var(--warn); background: var(--warn-bg); }
+.arrow-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.arrow { font-family: var(--font-sign); font-size: 22px; color: var(--muted); }
+.copybox { width: 100%; min-height: 90px; font-size: 15px; font-family: var(--font-body); resize: vertical; }
+
+/* Flikar */
+.tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 6; background: var(--surface); border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom, 0px); padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-area-inset-right, 0px); }
+.tabs-in { max-width: 560px; margin: 0 auto; display: grid; grid-template-columns: repeat(var(--n, 3), 1fr); }
+.tabs button { background: none; border: 0; padding: 10px 4px 12px; font-weight: 600; font-size: 14px; color: var(--muted); display: grid; justify-items: center; gap: 2px; position: relative; }
+.tabs button[aria-current="page"] { color: var(--sign); }
+.tabs button[aria-current="page"]::after { content: ""; position: absolute; top: 0; left: 25%; right: 25%; height: 3px; background: var(--sign); border-radius: 0 0 3px 3px; }
+.tabs .ico { font-family: var(--font-sign); font-size: 18px; font-weight: 700; line-height: 1; }
+.badge { position: absolute; top: 6px; right: calc(50% - 26px); background: var(--bad); color: #fff; font-size: 11px; border-radius: 999px; min-width: 18px; height: 18px; display: grid; place-items: center; padding: 0 5px; }
+
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(80px + env(safe-area-inset-bottom, 0px)); background: var(--fg); color: var(--bg); padding: 10px 16px; border-radius: 999px; font-weight: 600; font-size: 14px; z-index: 20; max-width: calc(100% - 32px); text-align: center; }
+.toast.err { background: var(--bad); color: #fff; }
+
+.rules { margin: 0; padding-left: 18px; color: var(--muted); font-size: 14px; display: grid; gap: 4px; }
+@media (prefers-reduced-motion: no-preference) { .spot, .btn { transition: border-color .15s, background .15s, opacity .15s; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="p-sign" aria-hidden="true">P</div>
+    <div class="grow">
+      <h1>Sundstorgsgaraget</h1>
+      <div class="sub">Plan 2 · nedre plan · Helsingborg</div>
+    </div>
+    <button class="who" id="who-btn" hidden></button>
+  </header>
+  <div id="banner"></div>
+  <main id="view"></main>
+</div>
+<nav class="tabs" id="tabs" hidden><div class="tabs-in" id="tabs-in"></div></nav>
+<div class="toast" id="toast" hidden role="status" aria-live="polite"></div>
+
+<script>
+/* =========================================================
+   Inställningar. Fyll i efter att Supabase-projektet skapats.
+   Tomma värden = demoläge med exempeldata i webbläsaren.
+   ========================================================= */
+const CONFIG = {
+  supabaseUrl: "https://sntuuntgoyagccpvtpvf.supabase.co",
+  supabaseAnonKey: "sb_publishable_mkyXZN38BISQ6FKMx6PxHQ_itiT0prj"
+};
+
+/* ---------- Datum (svensk tid) ---------- */
+const TZ = "Europe/Stockholm";
+const todayStr = () => new Intl.DateTimeFormat("sv-SE", { timeZone: TZ }).format(new Date());
+const addDays = (s, n) => { const d = new Date(s + "T12:00:00Z"); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); };
+const fmtDate = s => new Date(s + "T12:00:00Z").toLocaleDateString("sv-SE", { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" });
+const normPlate = p => (p || "").toUpperCase().replace(/[^A-Z0-9ÅÄÖ]/g, "");
+const showPlate = p => { const n = normPlate(p); const m = n.match(/^([A-ZÅÄÖ]{3})([0-9]{2}[A-Z0-9])$/); return m ? m[1] + " " + m[2] : n; };
+
+/* ---------- Lagring ---------- */
+const ls = {
+  get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} },
+  del(k) { try { localStorage.removeItem(k); } catch (e) {} }
+};
+
+class RemoteStore {
+  constructor(url, key) { this.url = url.replace(/\/$/, ""); this.key = key; this.code = ls.get("park.code") || ""; this.demo = false; }
+  async rpc(fn, args) {
+    const res = await fetch(`${this.url}/rest/v1/rpc/${fn}`, {
+      method: "POST",
+      headers: { apikey: this.key, Authorization: "Bearer " + this.key, "Content-Type": "application/json" },
+      body: JSON.stringify({ p_code: this.code, ...args })
+    });
+    const txt = await res.text();
+    let data = null; try { data = txt ? JSON.parse(txt) : null; } catch (e) {}
+    if (!res.ok) throw new Error((data && data.message) || "Något gick fel, försök igen");
+    return data;
+  }
+  needsCode() { return true; }
+  setCode(c) { this.code = c; ls.set("park.code", c); }
+  state() { return this.rpc("park_state", {}); }
+  addMember(name) { return this.rpc("park_add_member", { p_name: name }); }
+  addVehicle(m, plate) { return this.rpc("park_add_vehicle", { p_member: m, p_plate: plate }); }
+  removeVehicle(m, v) { return this.rpc("park_remove_vehicle", { p_member: m, p_vehicle: v }); }
+  book(m, v, day) { return this.rpc("park_book", { p_member: m, p_vehicle: v, p_day: day }); }
+  cancel(m, b) { return this.rpc("park_cancel", { p_member: m, p_booking: b }); }
+  markDone(m, permit, plate) { return this.rpc("park_mark_done", { p_member: m, p_permit: permit, p_plate: plate }); }
+}
+
+/* Demoläge: samma regler som databasen, sparas i webbläsaren */
+class DemoStore {
+  constructor() { this.demo = true; this.db = ls.get("park.demo") || this.seed(); }
+  seed() {
+    const t = todayStr(), tm = addDays(t, 1);
+    const id = () => Math.random().toString(36).slice(2, 10);
+    const M = ["Claes", "Martin", "Simon", "Anders", "Robert"].map((n, i) => ({ id: "m" + i, name: n, is_admin: i === 0 }));
+    const V = [
+      { id: "v0", member_id: "m0", plate: "ABC123" },
+      { id: "v1", member_id: "m1", plate: "DEF456" },
+      { id: "v2", member_id: "m2", plate: "JSC70X" },
+      { id: "v3", member_id: "m3", plate: "GHI789" },
+      { id: "v4", member_id: "m3", plate: "KLM12A" }
+    ];
+    const P = [
+      { id: 1, name: "Tillstånd 1", current_plate: "JSC70X", updated_at: null },
+      { id: 2, name: "Tillstånd 2", current_plate: "DEF456", updated_at: null }
+    ];
+    const B = [
+      { id: id(), day: t, permit_id: 1, member_id: "m2", vehicle_id: "v2", created_at: new Date().toISOString() },
+      { id: id(), day: t, permit_id: 2, member_id: "m1", vehicle_id: "v1", created_at: new Date().toISOString() },
+      { id: id(), day: tm, permit_id: 2, member_id: "m3", vehicle_id: "v3", created_at: new Date().toISOString() }
+    ];
+    return { members: M, vehicles: V, permits: P, bookings: B };
+  }
+  save() { ls.set("park.demo", this.db); }
+  reset() { ls.del("park.demo"); this.db = this.seed(); }
+  needsCode() { return false; }
+  async state() { const t = todayStr(); return { today: t, ...JSON.parse(JSON.stringify(this.db)) }; }
+  async addMember(name) {
+    name = name.trim(); if (name.length < 2) throw new Error("Skriv ditt namn");
+    let m = this.db.members.find(x => x.name.toLowerCase() === name.toLowerCase());
+    if (!m) { m = { id: "m" + Date.now(), name, is_admin: false }; this.db.members.push(m); this.save(); }
+    return m.id;
+  }
+  async addVehicle(mid, plate) {
+    const p = normPlate(plate);
+    if (p.length < 2 || p.length > 8) throw new Error("Ogiltigt registreringsnummer");
+    if (this.db.vehicles.some(v => v.plate === p)) throw new Error(`Regnumret ${p} finns redan`);
+    const v = { id: "v" + Date.now(), member_id: mid, plate: p }; this.db.vehicles.push(v); this.save(); return v.id;
+  }
+  async removeVehicle(mid, vid) {
+    if (this.db.bookings.some(b => b.vehicle_id === vid && b.day >= todayStr())) throw new Error("Bilen har en kommande bokning. Avboka först.");
+    this.db.vehicles = this.db.vehicles.filter(v => !(v.id === vid && v.member_id === mid)); this.save();
+  }
+  async book(mid, vid, day) {
+    const t = todayStr();
+    if (day < t || day > addDays(t, 1)) throw new Error("Du kan bara boka för idag eller imorgon");
+    if (this.db.bookings.some(b => b.day === day && b.member_id === mid)) throw new Error("Du har redan en plats den dagen");
+    const plate = this.db.vehicles.find(v => v.id === vid)?.plate;
+    const free = this.db.permits.filter(p => !this.db.bookings.some(b => b.day === day && b.permit_id === p.id))
+      .sort((a, b) => (b.current_plate === plate) - (a.current_plate === plate) || a.id - b.id);
+    if (!free.length) throw new Error("Alla platser är redan bokade");
+    this.db.bookings.push({ id: "b" + Date.now(), day, permit_id: free[0].id, member_id: mid, vehicle_id: vid, created_at: new Date().toISOString() });
+    this.save();
+  }
+  async cancel(mid, bid) {
+    const me = this.db.members.find(m => m.id === mid);
+    this.db.bookings = this.db.bookings.filter(b => !(b.id === bid && (b.member_id === mid || me?.is_admin))); this.save();
+  }
+  async markDone(mid, permit, plate) {
+    if (!this.db.members.find(m => m.id === mid)?.is_admin) throw new Error("Bara administratören kan bekräfta ändringar");
+    const p = this.db.permits.find(p => p.id === permit); p.current_plate = normPlate(plate); p.updated_at = new Date().toISOString(); this.save();
+  }
+}
+
+const store = CONFIG.supabaseUrl && CONFIG.supabaseAnonKey ? new RemoteStore(CONFIG.supabaseUrl, CONFIG.supabaseAnonKey) : new DemoStore();
+
+/* ---------- Tillstånd i UI ---------- */
+let S = null;                         // senaste data
+let me = ls.get("park.me");           // inloggad person (id)
+let tab = "boka";
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const plateHtml = (p, lg) => `<span class="plate${lg ? " lg" : ""}"><span>${esc(showPlate(p))}</span></span>`;
+
+function toast(msg, err) {
+  const t = $("#toast"); t.textContent = msg; t.className = "toast" + (err ? " err" : ""); t.hidden = false;
+  clearTimeout(toast.h); toast.h = setTimeout(() => t.hidden = true, err ? 4500 : 2500);
+}
+async function act(fn, okMsg) {
+  try { await fn(); if (okMsg) toast(okMsg); await load(); }
+  catch (e) { toast(e.message || String(e), true); if (/gruppkod/i.test(e.message)) { ls.del("park.code"); render(); } }
+}
+
+async function load() {
+  try { S = await store.state(); }
+  catch (e) { S = null; if (/gruppkod/i.test(e.message)) { ls.del("park.code"); store.code = ""; } else toast(e.message, true); }
+  if (S && me && !S.members.some(m => m.id === me)) { me = null; ls.del("park.me"); }
+  render();
+}
+
+/* ---------- Beräkningar ---------- */
+const member = id => S.members.find(m => m.id === id);
+const vehicle = id => S.vehicles.find(v => v.id === id);
+const myVehicles = () => S.vehicles.filter(v => v.member_id === me);
+const isAdmin = () => !!member(me)?.is_admin;
+function changesFor(day) {
+  return S.permits.map(p => {
+    const b = S.bookings.find(x => x.day === day && x.permit_id === p.id);
+    const plate = b ? vehicle(b.vehicle_id)?.plate : null;
+    return { permit: p, booking: b, plate, who: b ? member(b.member_id)?.name : null, needed: !!plate && plate !== p.current_plate };
+  });
+}
+function pendingCount() {
+  const t = S.today; return [t, addDays(t, 1)].reduce((n, d) => n + changesFor(d).filter(c => c.needed).length, 0);
+}
+
+/* ---------- Vyer ---------- */
+function render() {
+  const banner = $("#banner");
+  banner.innerHTML = store.demo
+    ? `<div class="banner"><span><b>Demoläge.</b> Exempeldata som bara sparas i din webbläsare.</span><button id="reset-demo">Återställ demo</button></div>` : "";
+  if (store.demo) $("#reset-demo").onclick = () => { store.reset(); load(); toast("Demodata återställd"); };
+
+  const v = $("#view");
+  if (store.needsCode() && !store.code) { $("#tabs").hidden = true; $("#who-btn").hidden = true; v.innerHTML = viewCode(); bindCode(); return; }
+  if (!S) { v.innerHTML = `<p class="hint" style="margin-top:24px">Laddar…</p>`; return; }
+  if (!me) { $("#tabs").hidden = true; $("#who-btn").hidden = true; v.innerHTML = viewWho(); bindWho(); return; }
+
+  const wb = $("#who-btn"); wb.hidden = false; wb.textContent = member(me).name + " ▾"; wb.onclick = () => { me = null; ls.del("park.me"); render(); };
+  renderTabs();
+  if (tab === "boka") { v.innerHTML = viewBook(); bindBook(); }
+  if (tab === "bilar") { v.innerHTML = viewCars(); bindCars(); }
+  if (tab === "andringar") { v.innerHTML = viewChanges(); bindChanges(); }
+}
+
+function renderTabs() {
+  const n = pendingCount();
+  const items = [
+    ["boka", "P", "Boka"],
+    ["bilar", "ABC", "Mina bilar"],
+    ["andringar", "⇄", isAdmin() ? "Att ändra" : "Status"]
+  ];
+  $("#tabs").hidden = false;
+  $("#tabs-in").style.setProperty("--n", items.length);
+  $("#tabs-in").innerHTML = items.map(([k, ico, label]) =>
+    `<button data-tab="${k}" ${tab === k ? 'aria-current="page"' : ""}><span class="ico">${ico}</span>${label}${k === "andringar" && n ? `<span class="badge">${n}</span>` : ""}</button>`).join("");
+  document.querySelectorAll("[data-tab]").forEach(b => b.onclick = () => { tab = b.dataset.tab; render(); window.scrollTo(0, 0); });
+}
+
+function viewCode() {
+  return `<div class="card" style="margin-top:24px">
+    <div><div class="eyebrow">Välkommen</div><h2 style="margin-top:4px">Ange gruppkoden</h2>
+    <p class="hint">Koden får du av Claes eller Simon. Den behövs bara första gången på den här telefonen.</p></div>
+    <form id="code-form" class="field"><label for="code-in">Gruppkod</label>
+    <input class="input" id="code-in" autocomplete="off" autocapitalize="characters" required>
+    <button class="btn full" style="margin-top:8px">Fortsätt</button></form></div>`;
+}
+function bindCode() {
+  $("#code-form").onsubmit = async e => { e.preventDefault(); store.setCode($("#code-in").value.trim()); await load(); if (!S) toast("Fel gruppkod", true); };
+}
+
+function viewWho() {
+  return `<h2>Vem är du?</h2>
+    <p class="hint">Välj ditt namn. Appen kommer ihåg dig på den här telefonen.</p>
+    <div class="names" style="margin-top:12px">${S.members.map(m => {
+      const n = S.vehicles.filter(v => v.member_id === m.id).length;
+      return `<button data-me="${esc(m.id)}">${esc(m.name)}<small>${m.is_admin ? "Administratör · " : ""}${n} ${n === 1 ? "bil" : "bilar"}</small></button>`; }).join("")}</div>
+    <form id="new-form" class="card"><div class="field"><label for="new-name">Finns du inte med?</label>
+    <input class="input" id="new-name" placeholder="Förnamn" autocomplete="given-name" required></div>
+    <button class="btn ghost">Lägg till mig</button></form>`;
+}
+function bindWho() {
+  document.querySelectorAll("[data-me]").forEach(b => b.onclick = () => { me = b.dataset.me; ls.set("park.me", me); tab = myVehiclesFor(me) ? "boka" : "bilar"; render(); });
+  $("#new-form").onsubmit = e => { e.preventDefault(); act(async () => { me = await store.addMember($("#new-name").value); ls.set("park.me", me); tab = "bilar"; }, "Välkommen! Lägg till ditt regnummer."); };
+}
+const myVehiclesFor = id => S.vehicles.some(v => v.member_id === id);
+
+function dayCard(day, label, isTomorrow) {
+  const rows = changesFor(day);
+  const mine = S.bookings.find(b => b.day === day && b.member_id === me);
+  const free = rows.filter(r => !r.booking).length;
+  const cars = myVehicles();
+  const status = free ? `<span class="chip ok">${free} av ${rows.length} lediga</span>` : `<span class="chip bad">Fullbokat</span>`;
+  let action = "";
+  if (mine) {
+    action = `<button class="btn danger full" data-cancel="${esc(mine.id)}">Avboka min plats ${isTomorrow ? "imorgon" : "idag"}</button>`;
+  } else if (!cars.length) {
+    action = `<button class="btn ghost full" data-goto="bilar">Lägg till ett regnummer för att boka</button>`;
+  } else if (free) {
+    const pick = cars.length > 1 ? `<div class="pick" role="radiogroup" aria-label="Välj bil">${cars.map((c, i) =>
+      `<label><input type="radio" name="car-${day}" value="${esc(c.id)}" ${i === 0 ? "checked" : ""}>${plateHtml(c.plate)}</label>`).join("")}</div>` : "";
+    action = `${pick}<button class="btn full" data-book="${day}">Boka plats ${isTomorrow ? "imorgon" : "idag"}${cars.length === 1 ? " · " + esc(showPlate(cars[0].plate)) : ""}</button>`;
+  }
+  return `<section class="day" aria-label="${label}">
+    <div class="day-head"><div><h3>${label}</h3><div class="date">${fmtDate(day)}</div></div>${status}</div>
+    <div class="spots">${rows.map(r => `<div class="spot${r.booking ? " taken" : ""}${r.booking?.member_id === me ? " mine" : ""}">
+      <div class="spot-no" aria-label="Plats ${r.permit.id}">${r.permit.id}</div>
+      <div class="spot-info">${r.booking ? `<span class="name">${esc(r.who)}${r.booking.member_id === me ? " (du)" : ""}</span>${plateHtml(r.plate)}` : `<span class="free">Ledig</span>`}</div>
+      <div></div></div>`).join("")}</div>
+    ${action}</section>`;
+}
+
+function viewBook() {
+  const t = S.today, tm = addDays(t, 1);
+  return `${dayCard(tm, "Imorgon", true)}${dayCard(t, "Idag", false)}
+    <div class="card"><div class="eyebrow">Så funkar det</div><ul class="rules">
+      <li>Boka dagen innan. Först till kvarn gäller.</li>
+      <li>En plats per person och dag. Avboka om planerna ändras.</li>
+      <li>Platserna gäller per registreringsnummer, så Claes byter regnummer i parkeringssystemet när någon ny ska stå där.</li>
+      <li>Parkera på plan 2, nedre plan.</li></ul></div>`;
+}
+function bindBook() {
+  document.querySelectorAll("[data-book]").forEach(b => b.onclick = () => {
+    const day = b.dataset.book;
+    const sel = document.querySelector(`input[name="car-${day}"]:checked`);
+    const vid = sel ? sel.value : myVehicles()[0].id;
+    b.disabled = true;
+    act(() => store.book(me, vid, day), "Bokat! Claes får besked om regnumret behöver bytas.");
+  });
+  document.querySelectorAll("[data-cancel]").forEach(b => b.onclick = () => {
+    if (b.dataset.armed) { act(() => store.cancel(me, b.dataset.cancel), "Avbokat"); }
+    else { b.dataset.armed = "1"; b.textContent = "Tryck igen för att avboka"; setTimeout(() => { if (b.isConnected) render(); }, 4000); }
+  });
+  document.querySelectorAll("[data-goto]").forEach(b => b.onclick = () => { tab = b.dataset.goto; render(); });
+}
+
+function viewCars() {
+  const cars = myVehicles();
+  return `<h2>Mina bilar</h2>
+    <div class="card"><div class="list">${cars.length ? cars.map(c => `<div class="list-item">${plateHtml(c.plate, true)}
+      <button class="btn danger small" data-rm="${esc(c.id)}">Ta bort</button></div>`).join("") : `<p class="hint" style="margin:0">Du har inga bilar än. Lägg till det regnummer du kör in med.</p>`}</div></div>
+    <form id="car-form" class="card"><div class="field"><label for="plate-in">Lägg till registreringsnummer</label>
+      <input class="input platein" id="plate-in" placeholder="ABC 123" maxlength="10" autocomplete="off" autocapitalize="characters" required></div>
+      <button class="btn">Spara regnummer</button>
+      <p class="hint" style="margin:0">Du kan ha flera bilar. Du väljer vilken när du bokar.</p></form>`;
+}
+function bindCars() {
+  $("#car-form").onsubmit = e => { e.preventDefault(); act(() => store.addVehicle(me, $("#plate-in").value), "Regnummer sparat"); };
+  document.querySelectorAll("[data-rm]").forEach(b => b.onclick = () => {
+    if (b.dataset.armed) act(() => store.removeVehicle(me, b.dataset.rm), "Borttagen");
+    else { b.dataset.armed = "1"; b.textContent = "Bekräfta"; }
+  });
+}
+
+function changeText(day, label) {
+  const rows = changesFor(day).filter(r => r.needed);
+  if (!rows.length) return "";
+  return `${label} (${day}):\n` + rows.map(r => `${r.permit.name}: byt ${r.permit.current_plate ? showPlate(r.permit.current_plate) : "(tomt)"} → ${showPlate(r.plate)} (${r.who})`).join("\n");
+}
+function viewChanges() {
+  const t = S.today, tm = addDays(t, 1);
+  const block = (day, label) => {
+    const rows = changesFor(day);
+    return `<section class="day"><div class="day-head"><div><h3>${label}</h3><div class="date">${fmtDate(day)}</div></div>
+      ${rows.some(r => r.needed) ? `<span class="chip warn">${rows.filter(r => r.needed).length} att ändra</span>` : `<span class="chip ok">Inget att ändra</span>`}</div>
+      ${rows.map(r => `<div class="change${r.needed ? " todo" : ""}">
+        <div class="row" style="justify-content:space-between"><b>${esc(r.permit.name)}</b>
+          ${r.needed ? `<span class="chip warn">Byt regnummer</span>` : r.plate ? `<span class="chip ok">Stämmer</span>` : `<span class="chip">Ingen bokning</span>`}</div>
+        <div class="arrow-row"><span class="hint" style="margin:0">I systemet:</span>${r.permit.current_plate ? plateHtml(r.permit.current_plate) : `<span class="hint" style="margin:0">tomt</span>`}
+          ${r.needed ? `<span class="arrow">→</span>${plateHtml(r.plate)}<span>${esc(r.who)}</span>` : ""}</div>
+        ${r.needed && isAdmin() ? `<button class="btn small" data-done="${r.permit.id}" data-plate="${esc(r.plate)}">Klart, jag har ändrat</button>` : ""}
+      </div>`).join("")}</section>`;
+  };
+  const txt = [changeText(t, "Idag"), changeText(tm, "Imorgon")].filter(Boolean).join("\n\n");
+  return `<h2>${isAdmin() ? "Att ändra i parkeringssystemet" : "Status i parkeringssystemet"}</h2>
+    <p class="hint">${isAdmin() ? "När morgondagens bil skiljer sig från den som ligger registrerad dyker den upp här. Byt regnummer i garagets system och tryck Klart." : "Claes byter regnummer i garagets system. Här ser du vad som ligger registrerat just nu."}</p>
+    ${block(tm, "Imorgon")}${block(t, "Idag")}
+    ${isAdmin() && txt ? `<div class="card"><label class="eyebrow" for="copy-txt">Lista att kopiera</label>
+      <textarea class="input copybox" id="copy-txt" readonly>${esc(txt)}</textarea>
+      <button class="btn ghost" id="copy-btn">Kopiera</button></div>` : ""}`;
+}
+function bindChanges() {
+  document.querySelectorAll("[data-done]").forEach(b => b.onclick = () => act(() => store.markDone(me, +b.dataset.done, b.dataset.plate), "Markerat som ändrat"));
+  const cb = $("#copy-btn");
+  if (cb) cb.onclick = () => {
+    const ta = $("#copy-txt");
+    navigator.clipboard?.writeText(ta.value).then(() => toast("Kopierat")).catch(() => { ta.select(); toast("Markerat – kopiera manuellt"); });
+  };
+}
+
+/* ---------- Start ---------- */
+load();
+const idle = () => !document.activeElement?.matches("input,textarea");
+setInterval(() => { if (document.visibilityState === "visible" && me && idle()) load(); }, 30000);
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && me) load(); });
+</script>
