@@ -33,10 +33,15 @@ som behöver bytas i garagets parkeringssystem.
 4. Skicka länken + gruppkoden i Teams-chatten "Parkering Helsingborg".
    Tips: "Lägg till på hemskärmen" i mobilen så blir det som en app.
 
-## Notis till Claes (nästa steg)
-Förslag: varje kväll kl 18:00 körs ett jobb (Supabase `pg_cron` + Edge Function) som anropar
-`park_pending_changes()` och skickar listan till Claes om den inte är tom.
-Kanal att välja: e-post (t.ex. Resend, kräver API-nyckel), SMS, eller Teams via webhook till kanalen.
+## Notis till Claes (Teams)
+- Kl 18 svensk tid postas en sammanfattning i Teams-gruppchatten om något regnummer behöver bytas till imorgon.
+- Bokningar som görs efter kl 18 för imorgon, eller för idag, postas direkt.
+- Byggt med `pg_cron` + `pg_net` i databasen (migration `20261116180000_teams_notis.sql`).
+- Webhook-länken från Teams Workflows ligger i Supabase Vault som `teams_webhook_url`, inte i git:
+  `select vault.create_secret('<länk>', 'teams_webhook_url', 'Teams-notis ParkeringsApp');`
+  Byta länk: `select vault.update_secret((select id from vault.secrets where name='teams_webhook_url'), '<ny länk>');`
+- Testa: `select park_post_teams('Test från ParkeringsApp', array['Det här är en testnotis.']);`
+- Skicka kvällens sammanfattning direkt: `select park_notify_changes(true);`
 
 ## Automatisk ändring i parkeringssystemet
 Möjligt med webbläsarautomation (Claude i webbläsaren eller ett Playwright-skript) men kräver
