@@ -73,7 +73,7 @@ language plpgsql stable security definer set search_path = public, extensions as
 declare h text;
 begin
   select value into h from app_config where key = 'group_code_hash';
-  if h is null or crypt(coalesce(p_code,''), h) <> h then
+  if h is null or crypt(lower(btrim(coalesce(p_code,''))), h) <> h then
     raise exception 'Fel gruppkod' using errcode = '28000';
   end if;
 end $$;
@@ -212,7 +212,7 @@ grant execute on function park_mark_done(text, uuid, int, text)     to anon;
 -- Startdata – ÄNDRA gruppkoden innan du kör!
 -- ---------------------------------------------------------------
 insert into app_config(key, value)
-values ('group_code_hash', crypt('BYT-MIG', gen_salt('bf')))
+values ('group_code_hash', crypt(lower('BYT-MIG'), gen_salt('bf')))  -- koden är inte skiftlägeskänslig
 on conflict (key) do nothing;
 
 insert into permits(id, name, current_plate) values
