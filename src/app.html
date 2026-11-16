@@ -180,7 +180,7 @@ class RemoteStore {
     const res = await fetch(`${this.url}/rest/v1/rpc/${fn}`, {
       method: "POST",
       headers: { apikey: this.key, Authorization: "Bearer " + this.key, "Content-Type": "application/json" },
-      body: JSON.stringify({ p_code: this.code, ...args })
+      body: JSON.stringify({ p_code: (this.code || "").trim().toLowerCase(), ...args })
     });
     const txt = await res.text();
     let data = null; try { data = txt ? JSON.parse(txt) : null; } catch (e) {}
@@ -188,7 +188,7 @@ class RemoteStore {
     return data;
   }
   needsCode() { return true; }
-  setCode(c) { this.code = c; ls.set("park.code", c); }
+  setCode(c) { this.code = (c || "").trim().toLowerCase(); ls.set("park.code", this.code); }
   state() { return this.rpc("park_state", {}); }
   addMember(name) { return this.rpc("park_add_member", { p_name: name }); }
   addVehicle(m, plate) { return this.rpc("park_add_vehicle", { p_member: m, p_plate: plate }); }
@@ -346,7 +346,7 @@ function viewCode() {
     <div><div class="eyebrow">Välkommen</div><h2 style="margin-top:4px">Ange gruppkoden</h2>
     <p class="hint">Koden behövs bara första gången på den här telefonen.</p></div>
     <form id="code-form" class="field"><label for="code-in">Gruppkod</label>
-    <input class="input" id="code-in" autocomplete="off" autocapitalize="characters" required>
+    <input class="input" id="code-in" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" required>
     <button class="btn full" style="margin-top:8px">Fortsätt</button></form></div>`;
 }
 function bindCode() {
