@@ -30,7 +30,7 @@ som behöver bytas i garagets parkeringssystem.
    `insert into app_config(key,value) values ('group_code_hash', extensions.crypt('ER-KOD', extensions.gen_salt('bf'))) on conflict (key) do update set value = excluded.value;`
 2. Project URL och publishable key står redan i `CONFIG` i `src/app.html`.
 3. **Vercel:** importera GitHub-repot på vercel.com/new. Varje push till `main` publiceras automatiskt.
-4. Skicka länken + gruppkoden i Teams-chatten "Parkering Helsingborg".
+4. Appen ligger på https://hbg-parking.vercel.app. Skicka länken + gruppkoden i Teams-chatten "Parkering Helsingborg".
    Tips: "Lägg till på hemskärmen" i mobilen så blir det som en app.
 
 ## Notis till Claes (Teams)
