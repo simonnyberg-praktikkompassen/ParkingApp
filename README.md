@@ -36,6 +36,7 @@ som behöver bytas i garagets parkeringssystem.
 ## Notis till Claes (Teams)
 - Kl 18 svensk tid postas en sammanfattning i Teams-gruppchatten om något regnummer behöver bytas till imorgon.
 - Bokningar som görs efter kl 18 för imorgon, eller för idag, postas direkt.
+- När Claes tryckt **Klart, jag har ändrat** postas en bekräftelse i samma chatt (vilken plats, gammalt → nytt regnummer, vem som står där). Migration `20261124080000_teams_bekraftelse.sql`.
 - Byggt med `pg_cron` + `pg_net` i databasen (migration `20261116180000_teams_notis.sql`).
 - Webhook-länken från Teams Workflows ligger i Supabase Vault som `teams_webhook_url`, inte i git:
   `select vault.create_secret('<länk>', 'teams_webhook_url', 'Teams-notis ParkeringsApp');`
